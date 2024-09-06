@@ -1,0 +1,30 @@
+[package]
+name = "cosmic-applet-weather"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0"
+
+[dependencies]
+# App general
+async-trait = "0.1"
+libcosmic.workspace = true
+tokio = "1"
+
+# Internationalization
+i18n-embed.workspace = true
+i18n-embed-fl.workspace = true
+rust-embed.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-log.workspace = true
+tracing-subscriber.workspace = true
+
+# Weather APIs
+chrono = { version = "0.4", features = ["clock", "serde"] }
+serde.workspace = true
+serde_json = "1"
+
+[dependencies.reqwest]
+version = "0.12"
+features = ["hickory-dns", "rustls-tls"]
