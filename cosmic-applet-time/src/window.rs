@@ -8,7 +8,11 @@ use cosmic::iced_futures::stream;
 use cosmic::widget::Id;
 use cosmic::{
     app,
-    applet::{cosmic_panel_config::PanelAnchor, menu_button, padded_control},
+    applet::{
+        cosmic_panel_config::PanelAnchor,
+        menu_button, padded_control,
+        token::subscription::{activation_token_subscription, TokenRequest, TokenUpdate},
+    },
     cctk::sctk::reexports::calloop,
     cosmic_theme::Spacing,
     iced::{
@@ -25,10 +29,6 @@ use cosmic::{
     },
     Element, Task,
 };
-use once_cell::sync::Lazy;
-use timedate_zbus::TimeDateProxy;
-use tokio::{sync::watch, time};
-
 use icu::{
     calendar::DateTime,
     datetime::{
@@ -40,16 +40,14 @@ use icu::{
     },
     locid::Locale,
 };
+use once_cell::sync::Lazy;
+use timedate_zbus::TimeDateProxy;
+use tokio::{sync::watch, time};
+use writeable::Writeable;
 
 use crate::{config::TimeAppletConfig, fl, time::get_calender_first};
-use cosmic::applet::token::subscription::{
-    activation_token_subscription, TokenRequest, TokenUpdate,
-};
 
 static AUTOSIZE_MAIN_ID: Lazy<Id> = Lazy::new(|| Id::new("autosize-main"));
-
-/// In order to keep the understandable, the chrono types are not globals,
-/// to avoid conflict with icu
 
 pub struct Window {
     core: cosmic::app::Core,
@@ -86,6 +84,7 @@ impl Window {
     fn format<D: Datelike>(&self, bag: Bag, date: &D) -> String {
         let options = DateTimeFormatterOptions::Components(bag);
 
+        // TODO: Store DataLocale directly to avoid clones
         let dtf =
             DateTimeFormatter::try_new_experimental(&self.locale.clone().into(), options).unwrap();
 
@@ -103,9 +102,14 @@ impl Window {
         .to_iso()
         .to_any();
 
-        dtf.format(&datetime)
-            .expect("can't format value")
-            .to_string()
+        let formatted = dtf
+            .format(&datetime)
+            .expect("Should be able to format valid DateTime");
+
+        // The width of the bag shouldn't change per tick unless the day or month changes.
+        // So, we can set a minimum width to ensure the Element doesn't resize on time changes.
+        let width = formatted.writeable_length_hint().capacity() + 2;
+        format!("  {formatted:width$}")
     }
 }
 
@@ -440,9 +444,7 @@ impl cosmic::Application for Window {
                 self.update(Message::Tick)
             }
             Message::Surface(a) => {
-                return cosmic::task::message(cosmic::Action::Cosmic(
-                    cosmic::app::Action::Surface(a),
-                ));
+                cosmic::task::message(cosmic::Action::Cosmic(cosmic::app::Action::Surface(a)))
             }
         }
     }

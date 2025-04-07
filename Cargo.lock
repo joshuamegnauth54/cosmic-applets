@@ -1317,6 +1317,7 @@ dependencies = [
  "tracing",
  "tracing-log",
  "tracing-subscriber",
+ "writeable",
  "zbus 4.4.0",
 ]
 

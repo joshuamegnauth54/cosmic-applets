@@ -7,19 +7,24 @@ license = "GPL-3.0-only"
 [dependencies]
 chrono = { version = "0.4.39", features = ["clock"] }
 chrono-tz = "0.10"
+
+icu = { version = "1.5", features = [
+  "experimental",
+  "compiled_data",
+  "icu_datetime_experimental",
+] }
+# Keep this synced with icu
+writeable = "0.5"
+
+# Workspace dependencies
 i18n-embed-fl.workspace = true
 i18n-embed.workspace = true
 libcosmic.workspace = true
 once_cell.workspace = true
 rust-embed.workspace = true
+timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
 tokio.workspace = true
 tracing-log.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
-icu = { version = "1.5.0", features = [
-    "experimental",
-    "compiled_data",
-    "icu_datetime_experimental",
-] }
 zbus.workspace = true
-timedate-zbus = { git = "https://github.com/pop-os/dbus-settings-bindings" }
